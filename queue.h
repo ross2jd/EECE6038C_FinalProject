@@ -13,8 +13,8 @@
 // List Function Prototypes
 void InitQueue();             // Initialize the queue
 void ClearQueue();            // Remove all items from the queue
-int Enqueue(char ch);         // Enter an item in the queue
-char Dequeue();               // Remove an item from the queue
+int Enqueue(int ch);         // Enter an item in the queue
+int Dequeue();               // Remove an item from the queue
 int isEmpty();                // Return true if queue is empty
 int isFull();                 // Return true if queue is full
 
