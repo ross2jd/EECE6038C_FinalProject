@@ -26,10 +26,11 @@ int putU2(int c)
 
 void putsU2(char *s)
 {
-    while(*s)
-        putU2(*s++);
-    putU2('\r');
-    putU2('\n');
+#warning "Fix this!! Commented code out"
+    //while(*s)
+    //    putU2(*s++);
+    //putU2('\r');
+    //putU2('\n');
 }
 
 char getU2(void)

@@ -5,6 +5,8 @@
  * Created on February 12, 2014, 8:17 AM
  */
 
+#include "xc.h"
+
 void InitADC()
 {
     AD1PCFG = 0xFFEF;
