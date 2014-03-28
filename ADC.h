@@ -6,7 +6,7 @@
  */
  
  
-#define TEMP_CH 4   //ch 4 = TC1047 temperature sensor
-#define TEMPMASK 0xffef // AN4 as analog input
-void InitADC();
+#define TEMP_CH 0  //ch 0 = stereo jack input
+#define TEMPMASK 0xfffe // AN4 as analog input
+void InitADC(int channelMask);
 int ReadADC(int ch);

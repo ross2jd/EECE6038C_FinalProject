@@ -16,7 +16,7 @@ static int theQueue[MAX_SIZE];	// The queue
 //--------------------------------------------
 void InitQueue()
 {
-	head = tail = -1;
+    head = tail = -1;
 }
 
 //--------------------------------------------
@@ -26,7 +26,7 @@ void InitQueue()
 //--------------------------------------------
 void ClearQueue()
 {
-	head = tail = -1; // Reset indices to start over
+    head = tail = -1; // Reset indices to start over
 }
 
 //--------------------------------------------
@@ -41,16 +41,13 @@ void ClearQueue()
 //		wrap-around when the end of the array
 //		is reached.
 //--------------------------------------------
-int Enqueue(int val)
+void Enqueue(int val)
 {
-	// Check to see if the Queue is full
-	if(isFull()) return FALSE;
-
-	// Increment tail index
-	tail++;
-	// Add the item to the Queue
-	theQueue[tail % MAX_SIZE] = val;
-	return TRUE;
+    // Increment tail index
+    tail++;
+    // Add the item to the Queue
+    theQueue[tail % MAX_SIZE] = val;
+    return;
 }
 
 //--------------------------------------------
@@ -61,16 +58,11 @@ int Enqueue(int val)
 //--------------------------------------------
 int Dequeue()
 {
-	int val;
+    int val;
 
-	// Check for empty Queue
-	if(isEmpty()) return '-9999';  // Return setinel int if queue is empty
-	else
-	{
-		head++;
-		val = theQueue[head % MAX_SIZE];		// Get character to return
-		return val;				// Return popped character
-	}
+    head++;
+    val = theQueue[head % MAX_SIZE];	// Get character to return
+    return val;				// Return popped character
 }
 
 //--------------------------------------------
@@ -83,7 +75,7 @@ int Dequeue()
 //--------------------------------------------
 int isEmpty()
 {
-	return (head == tail);
+    return (head == tail);
 }
 
 //--------------------------------------------
@@ -96,8 +88,8 @@ int isEmpty()
 //--------------------------------------------
 int isFull()
 {
-	// Queue is full if tail has wrapped around
-	//	to location of the head.  See note in
-	//	Enqueue() function.
-	return ((tail - MAX_SIZE) == head);
+    // Queue is full if tail has wrapped around
+    //	to location of the head.  See note in
+    //	Enqueue() function.
+    return ((tail - MAX_SIZE) == head);
 }
