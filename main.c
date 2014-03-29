@@ -16,8 +16,8 @@
 #include "buttons.h"
 
 // Declare global variables
-#define PERIOD  5
-#define BUFFER_SIZE 256
+#define PERIOD  15
+#define BUFFER_SIZE 1024
 
 // Timer1 ISR
 void _ISR _T1Interrupt(void)
@@ -31,9 +31,16 @@ void _ISR _T1Interrupt(void)
     else
     {
         // Read the ADC and enqueue it into the buffer.
-        Enqueue(ReadADC(TEMP_CH));
+        Enqueue(0);//ReadADC(AUDIO_CH));
     }
     _T1IF = 0; // clear flag
+}
+
+void _ISR _ADC1Interrupt(void)
+{
+    //printf(".");
+    printf("%i\n", ADC1BUF0);
+    IFS0bits.AD1IF = 0;
 }
 
 int main(void) {
@@ -41,18 +48,15 @@ int main(void) {
     int keyPressed = 0;
     int writeBuffer[BUFFER_SIZE];
     int curBuffPos = 0;
+    int numWritesCounter = 0;
 
     // initializations
     InitU2();   // 115,200 baud 8, n ,1
+    Clrscr();
+    Home();
     printf("Initializing system...\n");
-    InitADC(TEMPMASK);
+    InitADC(AUDIO_MASK);
     InitQueue();
-    // Init the timer
-    _T1IP = 4;      // default priority level
-    TMR1 = 0;       // clear the value
-    PR1 = PERIOD-1; // Set the period register
-    T1CON = 0x0020; // disabled, prescaler 1:64, internal clock
-    _T1IF = 0;      // clear the flag for the interrupt
     printf("Done initializing\n");
 
     // Open up file for writing the raw data.
@@ -71,9 +75,11 @@ int main(void) {
         return 0;
     }
 
-    // Start the timer
-    T1CONbits.TON = 1;
-    _T1IE = 0;
+    // Enable the interrupts for the ADC
+    IFS0bits.AD1IF = 0;
+    IEC0bits.AD1IE = 1;
+    // Start the automatic sample & conversion process
+    AD1CON1bits.ASAM = 1;
     while (1)
     {
         if (!isEmpty())
@@ -86,8 +92,20 @@ int main(void) {
                 // The buffer is full, perform a write and then reset the
                 // current buffer position.
                 curBuffPos = 0;
+
+                // Every 150 reads lets show that the operation is in progress.
+                // This is roughly about 1 second if the interrupts are
+                // correct.
+                numWritesCounter++;
+                if (numWritesCounter >= 2345)
+                {
+                    numWritesCounter = 0;
+                    printf(".");
+                }
+
             }
         }
+        /*
         keyPressed = ReadKEY();
         if (keyPressed & 4)
         {
@@ -106,9 +124,10 @@ int main(void) {
                 }
             }
             // perform on final write of curBuffPos size.
-            printf("Done!");
-            return 0;
-        }
+            printf("\nDone!");
+            while(1);
+        }*/
     }
+    while(1);
     return 0;
 }

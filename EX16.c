@@ -7,10 +7,10 @@ void InitEX16(void)
 
 void Delayms(unsigned t)
 {
-    T1CON = 0x8000;
+    T3CON = 0x8000;
     while(t--)
     {
-        TMR1 = 0;
-        while(TMR1 < (FCY/1000));
+        TMR3 = 0;
+        while(TMR3 < (FCY/1000));
     }
 }

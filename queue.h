@@ -8,7 +8,7 @@
 
 #include <stdio.h>
 
-#define MAX_SIZE    400        // Define maximum length of the queue
+#define MAX_SIZE    1024        // Define maximum length of the queue
 
 // List Function Prototypes
 void InitQueue();             // Initialize the queue
