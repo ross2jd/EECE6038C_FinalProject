@@ -18,6 +18,7 @@
 // Declare global variables
 #define PERIOD  15
 #define BUFFER_SIZE 1024
+int keyPressed = 0;
 
 // Timer1 ISR
 void _ISR _T1Interrupt(void)
@@ -39,13 +40,19 @@ void _ISR _T1Interrupt(void)
 void _ISR _ADC1Interrupt(void)
 {
     //printf(".");
-    printf("%i\n", ADC1BUF0);
-    IFS0bits.AD1IF = 0;
+    keyPressed = ReadKEY();
+    if (keyPressed & 8){
+        printf("done\n");
+        IEC0bits.AD1IE = 0;
+    }
+    else{
+        printf("%i\n", ADC1BUF0);
+        IFS0bits.AD1IF = 0;
+    }
 }
 
 int main(void) {
     // Declare local variables
-    int keyPressed = 0;
     int writeBuffer[BUFFER_SIZE];
     int curBuffPos = 0;
     int numWritesCounter = 0;
@@ -74,7 +81,7 @@ int main(void) {
         printf("Exiting...");
         return 0;
     }
-
+    keyPressed = 0;
     // Enable the interrupts for the ADC
     IFS0bits.AD1IF = 0;
     IEC0bits.AD1IE = 1;
@@ -105,6 +112,20 @@ int main(void) {
 
             }
         }
+        /*keyPressed = ReadKEY();
+        if (!(keyPressed & 8))
+        {
+            // Close up the file.
+            keyPressed = 0;
+            printf("Exiting...");
+            return 0;
+        }
+        keyPressed = 0;*/
+        
+        if (IEC0bits.AD1IE == 0){
+            while(1);
+                //printf("done");
+        }
         /*
         keyPressed = ReadKEY();
         if (keyPressed & 4)
@@ -128,6 +149,6 @@ int main(void) {
             while(1);
         }*/
     }
-    while(1);
+    //while(1);
     return 0;
 }

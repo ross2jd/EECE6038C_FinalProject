@@ -28,7 +28,7 @@ void InitADC(int channelMask)
     AD1CHS = 0x0000; // Connect RB2/AN2 as CH0 input..
     // in this example RB2/AN2 is the input
     AD1CSSL = 0;
-    AD1CON3 = 0x1000; // Sample time = 15Tad, Tad = Tcy
+    AD1CON3 = 0x0100; // 0x1000; // Sample time = 15Tad, Tad = Tcy
     AD1CON2 = 0x0000; // Set AD1IF after every each samples
     AD1CON1bits.ADON = 1; // turn ADC ON
 
