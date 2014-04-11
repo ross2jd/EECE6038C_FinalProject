@@ -22,13 +22,18 @@ void InitADC(int channelMask)
     _LATB15 = 0;
     _TRISB15 = 0;
      */
-    AD1PCFG = 0xFFFE; // AN2 as analog, all other pins are digital
+    AD1PCFG = channelMask; // AN2 as analog, all other pins are digital
+
+    // TEST: try having the form as a signed integer FORM<1:0>=10
     AD1CON1 = 0x00E0; // SSRC bit = 111 implies internal counter
     // ends sampling and starts converting.
     AD1CHS = 0x0000; // Connect RB2/AN2 as CH0 input..
     // in this example RB2/AN2 is the input
     AD1CSSL = 0;
-    AD1CON3 = 0x0100; // 0x1000; // Sample time = 15Tad, Tad = Tcy
+
+    // Conversion process takes 12 Tad. We set Tad = Tcy = 2/16MHz
+    // Therefore converting takes 1.5 us
+    AD1CON3 = 0x0100;   // Sample Time = 1 Tad, Tad = Tcy
     AD1CON2 = 0x0000; // Set AD1IF after every each samples
     AD1CON1bits.ADON = 1; // turn ADC ON
 

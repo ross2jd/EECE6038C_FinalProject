@@ -7,7 +7,7 @@ import sys
 import time
 
 
-PICport = 'COM23'
+PICport = 'COM4'
 
 # define the name of the connection, but don't set it up just yet - for exception handling
 pic = serial.Serial()
@@ -15,9 +15,8 @@ pic = serial.Serial()
 # Open up the serial connection for the DMM.
 try:
     pic = serial.Serial(port=PICport, baudrate="115200", bytesize=serial.EIGHTBITS,
-                        parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE, timeout=5)
+                        parity=serial.PARITY_NONE, stopbits=serial.STOPBITS_ONE)
 except Exception as e:  # catch *all* exceptions
-    # e = sys.exc_info()[0]
     print e
     print ("Serial connection error!")
     sys.exit(-1)
@@ -30,19 +29,30 @@ if pic.isOpen():
 buffer = []
 isdone = 1
 while isdone:
-    if 1: # pic.inWaiting():
+    if pic.inWaiting():
+        #print pic.readline()
+        #if (len(buffer) == 2):
+        #    start = time.time()
+        #    print "Recording..."
+        
         val = pic.readline().rstrip()
-        buffer.append(val) # stores all data received into a list
-        # print val
+        #print val
+        buffer.append(val)
         if val == "done":
             isdone = 0
+        #print val
+        
         # pic.flushInput()
 
+
+#print "Elapsed time of recording...", (start-end)
+        
 print("Done getting data from serial\nSaving data to file...")
-fh = open("mynewfile.txt", "w")
+fh = open("data.txt", "w")
 for data in buffer:
-    if data.isalnum():
-        fh.write(data + '\n')
+    fh.write(data + '\n')
+    #if data[1].isalnum():
+    #    fh.write(data[0] + "," + data[1] + '\n')
 
 
 fh.close()

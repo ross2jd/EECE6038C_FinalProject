@@ -1,95 +1,99 @@
-//---------------------------------------------------------------
-// File: queue.c
-// Implementation for a queue
-//---------------------------------------------------------------
+#include <string.h>
 #include "queue.h"
 
-// Declare these as static so no code outside of this source
-// can access them.
-static int head, tail;	// Declare global indices to head and tail of queue
-static int theQueue[MAX_SIZE];	// The queue
+int queue[QUEUE_SIZE];
+int queue2[QUEUE_SIZE];
 
-//--------------------------------------------
-// Function: InitQueue()
-// Purpose: Initialize queue to empty.
-// Returns: void
-//--------------------------------------------
-void InitQueue()
+int queuePos;
+int queuePos2;
+
+void initQueue()
 {
-    head = tail = -1;
+    resetQueue(0);
+    resetQueue(1);
+    clearQueue(0);
+    clearQueue(1);
 }
 
-//--------------------------------------------
-// Function: ClearQueue()
-// Purpose: Remove all items from the queue
-// Returns: void
-//--------------------------------------------
-void ClearQueue()
+void resetQueue(int choice)
 {
-    head = tail = -1; // Reset indices to start over
+    if (choice == 0)
+    {
+        queuePos = 0;
+    }
+    else
+    {
+        queuePos2 = 0;
+    }
 }
 
-//--------------------------------------------
-// Function: Enqueue()
-// Purpose: Enqueue an item into the queue.
-// Returns: TRUE if enqueue was successful
-//		or FALSE if the enqueue failed.
-// Note: We let head and tail continuing 
-//		increasing and use [head % MAX_SIZE] 
-//		and [tail % MAX_SIZE] to get the real
-//		indices.  This automatically handles
-//		wrap-around when the end of the array
-//		is reached.
-//--------------------------------------------
-void Enqueue(int val)
+void clearQueue(int choice)
 {
-    // Increment tail index
-    tail++;
-    // Add the item to the Queue
-    theQueue[tail % MAX_SIZE] = val;
-    return;
+    if (choice == 0)
+    {
+         memset(queue,0,QUEUE_SIZE*sizeof(queue[0]));
+    }
+    else
+    {
+         memset(queue2,0,QUEUE_SIZE*sizeof(queue2[0]));
+    }
 }
 
-//--------------------------------------------
-// Function: Dequeue()
-// Purpose: Dequeue an item from the Queue.
-// Returns: TRUE if dequeue was successful
-//		or FALSE if the dequeue failed.
-//--------------------------------------------
-int Dequeue()
+int getQueuePosition(int choice)
 {
-    int val;
-
-    head++;
-    val = theQueue[head % MAX_SIZE];	// Get character to return
-    return val;				// Return popped character
+    if (choice == 0)
+    {
+        return queuePos;
+    }
+    else
+    {
+        return queuePos2;
+    }
 }
 
-//--------------------------------------------
-// Function: isEmpty()
-// Purpose: Return true if the queue is empty
-// Returns: TRUE if empty, otherwise FALSE
-// Note: C has no boolean data type so we use
-//	the defined int values for TRUE and FALSE
-//	instead.
-//--------------------------------------------
-int isEmpty()
+int enqueue(int data, int choice)
 {
-    return (head == tail);
+    if (choice == 0)
+    {
+        if (queuePos >= (QUEUE_SIZE))
+            return 0;
+        queue[queuePos] = data;
+        queuePos++;
+        return 1;
+    }
+    else
+    {
+        if (queuePos >= (QUEUE_SIZE))
+            return 0;
+        queue2[queuePos2] = data;
+        queuePos++;
+        return 1;
+    }
 }
 
-//--------------------------------------------
-// Function: isFull()
-// Purpose: Return true if the queue is full.
-// Returns: TRUE if full, otherwise FALSE
-// Note: C has no boolean data type so we use
-//	the defined int values for TRUE and FALSE
-//	instead.
-//--------------------------------------------
-int isFull()
+int* getQueue(int choice)
 {
-    // Queue is full if tail has wrapped around
-    //	to location of the head.  See note in
-    //	Enqueue() function.
-    return ((tail - MAX_SIZE) == head);
+    if (choice == 0)
+        return queue;
+    else
+        return queue2;
+}
+
+int queueIsFull(int choice)
+{
+    if (choice == 0)
+    {
+        if (queuePos == QUEUE_SIZE)
+            return 1;
+        else
+            return 0;
+    }
+    else
+    {
+        if (queuePos2 == QUEUE_SIZE)
+            return 1;
+        else
+            return 0;
+    }
+
 }
