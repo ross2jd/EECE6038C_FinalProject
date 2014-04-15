@@ -1,6 +1,6 @@
 #include<stdio.h>
 
-#define QUEUE_SIZE  1024
+#define QUEUE_SIZE  1250
 
 void initQueue();
 void clearQueue(int choice);

@@ -18,7 +18,6 @@
 
 // Declare global variables
 #define PERIOD  15
-#define BUFFER_SIZE 1024
 int keyPressed = 0;
 int curQueue;
 int recording;
@@ -29,19 +28,21 @@ extern int queue2[QUEUE_SIZE];
 // Timer3 ISR
 void _ISRFAST _T3Interrupt(void)
 {
-     if (queueIsFull(curQueue))
-     {
-         // Switch out the queues
-         curQueue = (curQueue+1)%2;
-         if (queueIsFull(curQueue))
-         {
-             // Error out
-             printf("Error:: Both queue is full");
-             while(1);
-         }
-     }
-     // Get the value from the ADC and store it in the correct queue
-     enqueue(ReadADC(AUDIO_CH), curQueue);
+    if (queueIsFull(curQueue))
+    {
+        // Switch out the queues
+        curQueue = (curQueue+1)%2;
+        if (queueIsFull(curQueue))
+        {
+            // Switch out the queues
+            curQueue = (curQueue+1)%2;
+            // Error out
+            //printf("Error:: Both queue is full");
+            //while(1);
+        }
+    }
+    // Get the value from the ADC and store it in the correct queue
+    enqueue((ReadADC(AUDIO_CH)-518)*250, curQueue);
 
     _T3IF = 0; // clear flag
 }
@@ -62,9 +63,10 @@ void _ISRFAST _CNInterrupt(void)
 
 int main(void) {
     // Declare local variables
-    int* writeQueue;
-    MFILE *fd, *fs;
+    MFILE *fd;
     unsigned i, r;
+    unsigned queueZeroFill = 0;
+    unsigned queueOneFill = 0;
 
     // initializations
     InitU2();   // 115,200 baud 8, n ,1
@@ -105,7 +107,7 @@ int main(void) {
     printf("Media mounted\n");
 
     // Code for opening the file.
-    fd = fopenM("song12.txt", "w");
+    fd = fopenM("song34.txt", "w");
     if (fd == NULL)
     {
         unmount();
@@ -153,6 +155,7 @@ int main(void) {
             //writeQueue = getQueue(0);
             // We have a problem here where we are writing characters and not
             // characters... Timing works though!
+            queueZeroFill += 1;
             r = fwriteM(getQueue(0), QUEUE_SIZE*2, fd);
             resetQueue(0);
             // write the data for write queue
@@ -161,6 +164,7 @@ int main(void) {
         {
             // We should write the contents of queue two.
             //writeQueue = getQueue(1);
+            queueOneFill += 1;
             r = fwriteM(getQueue(1), QUEUE_SIZE*2, fd);
             resetQueue(1);
         }
@@ -170,41 +174,16 @@ int main(void) {
     T3CONbits.TON = 0;
     
     // Now need to write the rest of the data to the file
-    writeQueue = getQueue(curQueue);
     r = fwriteM(getQueue(curQueue), getQueuePosition(curQueue)*2, fd);
     
     printf("Done recording the audio\n");
     // Close up the file.
     fcloseM(fd);
 
-    // Lets now open the file up for reading and see if we can get the integers
-    // back out
-    printf("We are now going read the file back out, this could take a few min\n");
-    fs = fopenM("song12.txt", "r");
-    if (fs == NULL)
-    {
-        unmount();
-        printf("Failed to open file...\n");
-        while(1);
-    }
-
-    // Lets clear out the queues
-    initQueue();
-
-    r = 0; // Set a breakpoint here and switch to readpy serial
-    do {
-        r = freadM(queue, QUEUE_SIZE*2, fs);
-        for (i = 0; i < r/2; i++)
-            printf("%d\n", queue[i]);
-    } while(r == QUEUE_SIZE*2);
-
-    //TEST: Signals to the python serial that we are done.
-    printf("done\n");
-    printf("done\n");
-    
-    fcloseM(fs);
     unmount();
     printf("File is closed, SD Card unmounted\n");
+
+    printf("We wrote to queue_0 %d times and queue_1 %d times\n", queueZeroFill, queueOneFill);
 
     while(1);
     return 0;

@@ -63,10 +63,10 @@ int enqueue(int data, int choice)
     }
     else
     {
-        if (queuePos >= (QUEUE_SIZE))
+        if (queuePos2 >= (QUEUE_SIZE))
             return 0;
         queue2[queuePos2] = data;
-        queuePos++;
+        queuePos2++;
         return 1;
     }
 }
