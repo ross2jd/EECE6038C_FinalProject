@@ -14,6 +14,7 @@
 #include "fileio.h"
 #include "queue.h"
 #include "buttons.h"
+#include "wav.h"
 #include <stdio.h>
 
 // Declare global variables
@@ -63,10 +64,14 @@ void _ISRFAST _CNInterrupt(void)
 
 int main(void) {
     // Declare local variables
-    MFILE *fd;
+    MFILE *fd, *fs;
     unsigned i, r;
     unsigned queueZeroFill = 0;
     unsigned queueOneFill = 0;
+    unsigned file_num;
+    char file_name[11];
+    char wavFileName[12];
+    WAV* wavHandle;
 
     // initializations
     InitU2();   // 115,200 baud 8, n ,1
@@ -106,14 +111,23 @@ int main(void) {
     }
     printf("Media mounted\n");
 
-    // Code for opening the file.
-    fd = fopenM("song34.txt", "w");
-    if (fd == NULL)
+    // Code for opening the file
+    file_num = -1;
+    fd = NULL;
+    while (fd == NULL)
     {
-        unmount();
-        printf("Failed to open file...\n");
-        while(1);
+        file_num++;
+        if (file_num >= 99)
+        {
+            // Error out
+            unmount();
+            printf("Please clear out the song files on the SD card\n");
+            while(1);
+        }
+        sprintf(file_name, "song%d.txt", file_num);
+        fd = fopenM(file_name, "w");
     }
+    printf("File will be stored in: %s", file_name);
     printf("File opened\n");
 
     printf("Done initializing\n");
@@ -132,7 +146,7 @@ int main(void) {
         printf("Exiting...\n");
         return 0;
     }
-
+    
     printf("Beginning recording...\n");
 
     keyPressed = 0;
@@ -179,6 +193,37 @@ int main(void) {
     printf("Done recording the audio\n");
     // Close up the file.
     fcloseM(fd);
+    
+    // Now we are going to add in the WAV header
+    printf("Creating the WAV file...\n");
+
+     // init the queues so we can use as a buffer
+    initQueue();
+
+    fs = fopenM(file_name, "r");
+    wavHandle = initWavStruct(fs->size);
+
+    sprintf(wavFileName, "song%d.wav", file_num);
+    fd = fopenM(wavFileName, "w");
+    if (fd == NULL)
+    {
+        printf("Failed to open file!\n");
+        fcloseM(fs);
+        unmount();
+        while(1);
+    }
+
+    r = fwriteM(wavHandle, sizeof(WAV), fd);
+    // Copy the raw data to the WAV file
+    do {
+        r = freadM(queue, QUEUE_SIZE, fs);
+        r = fwriteM(queue, r, fd);
+    }while(r == QUEUE_SIZE);
+
+    fcloseM(fd);
+    fcloseM(fs);
+    printf("Done creating the WAV file!\n");
+    printf("The WAV file is stored in %s\n", wavFileName);
 
     unmount();
     printf("File is closed, SD Card unmounted\n");

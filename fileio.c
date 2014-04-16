@@ -456,7 +456,6 @@ unsigned FindDIR(MFILE *fp)
         // 2.2 terminate if it is empty (end of the list)
         if (a == DIR_EMPTY)
         {
-            putsU2("Error:: DIR_EMPTY");
             return NOT_FOUND;
         }
         // 2.3 skip erased entries if looking for a match
