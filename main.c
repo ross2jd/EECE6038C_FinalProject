@@ -65,13 +65,13 @@ void _ISRFAST _CNInterrupt(void)
 int main(void) {
     // Declare local variables
     MFILE *fd, *fs;
-    unsigned i, r;
-    unsigned queueZeroFill = 0;
-    unsigned queueOneFill = 0;
+    unsigned r;
     unsigned file_num;
     char file_name[11];
     char wavFileName[12];
     WAV* wavHandle;
+    long dataFileSize = 0;
+    long writeCounter = 0;
 
     // initializations
     InitU2();   // 115,200 baud 8, n ,1
@@ -103,13 +103,13 @@ int main(void) {
     // Code for setting up the SD Card
     while(!DetectSD()); // assumes SDCD pin is by default an input
     Delayms(100);       // wait for card to power up
-    printf("Media detected\n");
+    printf("\tMedia detected\n");
     if (!mount())
     {
-        printf("Mount failed...\n");
+        printf("\tMount failed...\n");
         while(1);
     }
-    printf("Media mounted\n");
+    printf("\tMedia mounted\n");
 
     // Code for opening the file
     file_num = -1;
@@ -121,21 +121,25 @@ int main(void) {
         {
             // Error out
             unmount();
-            printf("Please clear out the song files on the SD card\n");
+            printf("\tPlease clear out the song files on the SD card\n");
             while(1);
         }
         sprintf(file_name, "song%d.txt", file_num);
         fd = fopenM(file_name, "w");
     }
-    printf("File will be stored in: %s", file_name);
-    printf("File opened\n");
+    printf("\tFile will be stored in: %s\n", file_name);
+    printf("\tFile opened\n");
 
     printf("Done initializing\n");
-
+    
+    printf("===============================================================\n");
+    printf("===============================================================\n");
     // Print the instructional message
     printf("Please hook up your music player to the stereo jack. When\n");
     printf("you are ready you should press play and the RD6 pushbutton\n");
-    printf("close to the same time.\n");
+    printf("close to the same time. When you complete recording the song\n");
+    printf("press the RD6 push button again. Press anyother button to exit\n");
+    printf("the system now.\n");
     // Wait for the user to press the button RD6
     keyPressed = GetKEY();
     // If the user pressed any button BUT RD6 exit the system.
@@ -147,7 +151,7 @@ int main(void) {
         return 0;
     }
     
-    printf("Beginning recording...\n");
+    printf("Beginning recording...\nPress the RD6 button when you are done.\n");
 
     keyPressed = 0;
 
@@ -165,20 +169,13 @@ int main(void) {
     {
         if (queueIsFull(0))
         {
-            // We should write the contents of queue one
-            //writeQueue = getQueue(0);
-            // We have a problem here where we are writing characters and not
-            // characters... Timing works though!
-            queueZeroFill += 1;
+            // We should write the contents of queue zero.
             r = fwriteM(getQueue(0), QUEUE_SIZE*2, fd);
             resetQueue(0);
-            // write the data for write queue
         }
         else if (queueIsFull(1))
         {
-            // We should write the contents of queue two.
-            //writeQueue = getQueue(1);
-            queueOneFill += 1;
+            // We should write the contents of queue one.
             r = fwriteM(getQueue(1), QUEUE_SIZE*2, fd);
             resetQueue(1);
         }
@@ -203,6 +200,9 @@ int main(void) {
     fs = fopenM(file_name, "r");
     wavHandle = initWavStruct(fs->size);
 
+    dataFileSize = fs->size;
+    writeCounter = 0;
+
     sprintf(wavFileName, "song%d.wav", file_num);
     fd = fopenM(wavFileName, "w");
     if (fd == NULL)
@@ -218,6 +218,9 @@ int main(void) {
     do {
         r = freadM(queue, QUEUE_SIZE, fs);
         r = fwriteM(queue, r, fd);
+        writeCounter++;
+        if ((writeCounter % 100) == 0)
+            printf("%d%% complete...\n",(int)((double)writeCounter*QUEUE_SIZE*100/dataFileSize));
     }while(r == QUEUE_SIZE);
 
     fcloseM(fd);
@@ -227,8 +230,6 @@ int main(void) {
 
     unmount();
     printf("File is closed, SD Card unmounted\n");
-
-    printf("We wrote to queue_0 %d times and queue_1 %d times\n", queueZeroFill, queueOneFill);
 
     while(1);
     return 0;

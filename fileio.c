@@ -373,7 +373,8 @@ MFILE *fopenM(const char *filename, const char *mode)
 
         else // file exist already, report error
         {
-            putsU2("Error:: file already exists");
+            //putsU2("Error:: file already exists"); -- ignore because we are
+            // expecting this error now.
             FError = FE_FILE_OVERWRITE;
             goto ExitOpen;
         }
@@ -524,7 +525,7 @@ unsigned freadM(void * dest, unsigned size, MFILE *fp)
         // 2.1 check if EOF reached
         if (fp->seek >= fp->size)
         {
-            putsU2("Error: EOF");
+            //putsU2("Error: EOF");
             FError = FE_EOF; // reached the end
             break;
         }
